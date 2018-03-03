@@ -38,8 +38,11 @@ function preload() {
 
 var platforms,player;
 
+var score = 0;
+var scoreText;
 
 function create() {
+
     this.background = this.add.image(400, 300, 'sky')
 
     platforms = this.physics.add.staticGroup();
@@ -78,7 +81,66 @@ function create() {
     });
 
     this.physics.add.collider(player, platforms);
+
+    cursors = this.input.keyboard.createCursorKeys();
+
+
+    // Adding stars
+    stars = this.physics.add.group({
+        key: 'star',
+        repeat: 10,
+        setXY: { x: 12, y: 0, stepX: 70 }
+    });
+
+    stars.children.iterate(function (child) {
+
+        child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
+
+    });
+
+
+    this.physics.add.collider(stars, platforms);
+
+
+    function collectStar (player, star)
+    {
+        star.disableBody(true, true);
+        score += 10;
+        
+        scoreText.setText('Score: ' + score);
+    }
+
+    this.physics.add.overlap(player, stars, collectStar, null, this);
+
+
+    // Score Text
+    scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
 }
 
 // this is executed multiple times per second
-function update() {}
+function update() {
+
+    if (cursors.left.isDown)
+        {
+            player.setVelocityX(-160);
+
+            player.anims.play('left', true);
+        }
+    else if (cursors.right.isDown)
+        {
+            player.setVelocityX(160);
+
+            player.anims.play('right', true);
+        }
+    else
+        {
+            player.setVelocityX(0);
+
+            player.anims.play('turn');
+        }
+
+    if (cursors.up.isDown && player.body.touching.down)
+        {
+            player.setVelocityY(-303);
+        }
+}
